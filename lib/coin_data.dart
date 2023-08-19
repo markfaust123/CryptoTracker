@@ -35,22 +35,27 @@ class CoinData {
   String apiKey = '0BE6C1EA-EDB8-4733-AEB4-4F938CD6A807';
   String domain = 'rest.coinapi.io';
 
-  Future getCoinData(String coin, String fiat) async {
-    String path = '/v1/exchangerate/$coin/$fiat';
-    var request = Uri.https(domain, path);
+  Future getCoinData(String fiat) async {
+    Map<String, String> cryptoPrices = {};
 
-    https.Response response = await https.get(
-      request,
-      headers: {'X-CoinAPI-Key': apiKey},
-    );
+    for (String cryptoName in cryptoList) {
+      String path = '/v1/exchangerate/$cryptoName/$fiat';
+      var request = Uri.https(domain, path);
 
-    if (response.statusCode == 200) {
-      String data = response.body;
-      var decodedData = jsonDecode(data);
-      print(response.body);
-      return decodedData;
-    } else {
-      print('ERROR: ' + response.statusCode.toString() + ' - ' + response.body);
+      https.Response response = await https.get(
+        request,
+        headers: {'X-CoinAPI-Key': apiKey},
+      );
+
+      if (response.statusCode == 200) {
+        String data = response.body;
+        var decodedData = jsonDecode(data);
+        cryptoPrices[cryptoName] = decodedData['rate'].toStringAsFixed(0);
+      } else {
+        print(
+            'ERROR: ' + response.statusCode.toString() + ' - ' + response.body);
+      }
     }
+    return cryptoPrices;
   }
 }
